@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Infoanalytica — SDR/BDR Aptitude Assessment</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f5f5f3;
+      color: #1a1a1a;
+      min-height: 100vh;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 2rem 1rem 4rem;
+    }
+
+    .card {
+      background: #ffffff;
+      border-radius: 16px;
+      border: 1px solid rgba(0,0,0,0.08);
+      padding: 2.5rem;
+      width: 100%;
+      max-width: 680px;
+    }
+
+    .logo-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 2rem;
+      padding-bottom: 1.25rem;
+      border-bottom: 1px solid rgba(0,0,0,0.08);
+    }
+
+    .logo-bar img { height: 40px; width: auto; }
+    .logo-bar span { font-size: 12px; color: #666; }
+
+    .progress-bg {
+      height: 4px;
+      background: rgba(0,0,0,0.08);
+      border-radius: 2px;
+      margin-bottom: 2rem;
+    }
+    .progress-fill {
+      height: 4px;
+      background: #6B5CE7;
+      border-radius: 2px;
+      transition: width 0.4s ease;
+    }
+
+    .section-badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 500;
+      padding: 3px 10px;
+      border-radius: 20px;
+      margin-bottom: 12px;
+      background: #f0f0ee;
+      color: #555;
+      border: 1px solid rgba(0,0,0,0.08);
+    }
+
+    .q-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.25rem;
+    }
+
+    .q-counter { font-size: 13px; color: #666; }
+
+    .question-text {
+      font-size: 17px;
+      font-weight: 500;
+      color: #1a1a1a;
+      margin-bottom: 1.5rem;
+      line-height: 1.55;
+    }
+
+    .options { display: flex; flex-direction: column; gap: 10px; }
+
+    .opt {
+      background: #fff;
+      border: 1px solid rgba(0,0,0,0.12);
+      border-radius: 12px;
+      padding: 14px 16px;
+      font-size: 15px;
+      color: #1a1a1a;
+      cursor: pointer;
+      text-align: left;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transition: border-color 0.15s, background 0.15s;
+      font-family: inherit;
+    }
+    .opt:hover { border-color: rgba(0,0,0,0.25); background: #fafaf8; }
+    .opt.correct { border: 2px solid #1D9E75; background: #E1F5EE; color: #085041; }
+    .opt.incorrect { border: 2px solid #A32D2D; background: #FCEBEB; color: #501313; }
+
+    .opt-letter {
+      width: 26px; height: 26px;
+      border-radius: 50%;
+      border: 1px solid rgba(0,0,0,0.18);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 500;
+      flex-shrink: 0;
+    }
+
+    .feedback {
+      margin-top: 14px;
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      line-height: 1.6;
+      display: none;
+    }
+    .feedback.show { display: block; }
+    .feedback.ok { background: #E1F5EE; color: #085041; border: 1px solid #5DCAA5; }
+    .feedback.bad { background: #FCEBEB; color: #501313; border: 1px solid #F09595; }
+
+    .nav {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 2rem;
+    }
+
+    .btn {
+      background: #2C2C2C;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 26px;
+      font-size: 15px;
+      font-weight: 500;
+      cursor: pointer;
+      font-family: inherit;
+      transition: opacity 0.15s;
+    }
+    .btn:hover { opacity: 0.82; }
+    .btn:disabled { opacity: 0.35; cursor: not-allowed; }
+    .btn.purple { background: #6B5CE7; }
+
+    /* Form */
+    .intro-title { font-size: 20px; font-weight: 600; margin-bottom: 8px; }
+    .intro-desc { color: #555; font-size: 14px; line-height: 1.65; margin-bottom: 1.75rem; }
+
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    @media (max-width: 500px) { .form-row { grid-template-columns: 1fr; } .card { padding: 1.5rem; } }
+
+    .field { margin-bottom: 14px; }
+    .field label { display: block; font-size: 13px; color: #555; margin-bottom: 6px; }
+    .field input {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid rgba(0,0,0,0.18);
+      border-radius: 8px;
+      font-size: 15px;
+      font-family: inherit;
+      color: #1a1a1a;
+      background: #fff;
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .field input:focus { border-color: #6B5CE7; box-shadow: 0 0 0 3px rgba(107,92,231,0.12); }
+    .field .err { font-size: 12px; color: #A32D2D; margin-top: 4px; display: none; }
+
+    .test-meta {
+      display: flex; gap: 20px; flex-wrap: wrap;
+      margin: 1.25rem 0 1.75rem;
+    }
+    .test-meta span { font-size: 13px; color: #666; }
+
+    /* Results */
+    .results-header {
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 1.5rem; padding-bottom: 1.25rem;
+      border-bottom: 1px solid rgba(0,0,0,0.08);
+    }
+
+    .pass-badge {
+      margin-left: auto;
+      font-size: 12px; font-weight: 600;
+      padding: 4px 14px; border-radius: 20px;
+    }
+
+    .score-wrap { display: flex; align-items: center; gap: 1.5rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+
+    .verdict-badge {
+      display: inline-block;
+      padding: 5px 14px; border-radius: 20px;
+      font-size: 13px; font-weight: 500;
+      margin-bottom: 10px;
+    }
+    .v-strong { background: #E1F5EE; color: #085041; }
+    .v-good { background: #EEEDFE; color: #3C3489; }
+    .v-weak { background: #FCEBEB; color: #501313; }
+
+    .metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin: 1.5rem 0; }
+    .metric { background: #f5f5f3; border-radius: 8px; padding: 14px; text-align: center; }
+    .metric-val { font-size: 22px; font-weight: 600; color: #1a1a1a; }
+    .metric-lbl { font-size: 12px; color: #666; margin-top: 2px; }
+
+    .section-scores { border-top: 1px solid rgba(0,0,0,0.08); padding-top: 1.5rem; }
+    .section-scores h3 { font-size: 13px; font-weight: 500; margin-bottom: 14px; }
+    .s-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; font-size: 13px; }
+    .s-name { min-width: 175px; color: #555; }
+    .s-bar-bg { flex: 1; height: 6px; background: rgba(0,0,0,0.08); border-radius: 3px; }
+    .s-bar { height: 6px; border-radius: 3px; }
+    .s-pct { min-width: 34px; text-align: right; font-weight: 500; }
+
+    .results-footer {
+      margin-top: 1.5rem; padding-top: 1.25rem;
+      border-top: 1px solid rgba(0,0,0,0.08);
+      font-size: 12px; color: #666;
+      display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px;
+    }
+    .results-footer strong { color: #1a1a1a; }
+
+    .results-actions { margin-top: 1.5rem; text-align: center; }
+  </style>
+</head>
+<body>
+<div class="card" id="app">
+
+  <!-- Logo bar always visible at top -->
+  <div class="logo-bar">
+    <img src="data:image/jpeg;base64,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" alt="Infoanalytica" />
+    <span>SDR/BDR Aptitude Assessment</span>
+  </div>
+
+  <!-- Intro / form screen -->
+  <div id="intro-screen">
+    <p class="intro-title">Sales Development Representative Assessment</p>
+    <p class="intro-desc">Complete the form below to begin. This assessment covers 5 competency areas across 18 questions and takes approximately 10 minutes.</p>
+
+    <div class="form-row">
+      <div class="field">
+        <label>First name</label>
+        <input type="text" id="fname" placeholder="Jane" />
+        <div class="err" id="err-fname">Please enter your first name</div>
+      </div>
+      <div class="field">
+        <label>Last name</label>
+        <input type="text" id="lname" placeholder="Smith" />
+        <div class="err" id="err-lname">Please enter your last name</div>
+      </div>
+    </div>
+    <div class="field">
+      <label>Email address</label>
+      <input type="email" id="email" placeholder="jane.smith@email.com" />
+      <div class="err" id="err-email">Please enter a valid email address</div>
+    </div>
+    <div class="field">
+      <label>Role applied for <span style="font-weight:400;color:#888;">(optional)</span></label>
+      <input type="text" id="role" placeholder="e.g. SDR — UK Market" />
+    </div>
+
+    <div class="test-meta">
+      <span>18 questions</span>
+      <span>5 competency areas</span>
+      <span>~10 minutes</span>
+      <span>Pass mark: 70%</span>
+    </div>
+
+    <button class="btn purple" onclick="validateAndStart()">Begin assessment</button>
+  </div>
+
+  <!-- Test screen -->
+  <div id="test-screen" style="display:none;">
+    <div class="progress-bg"><div class="progress-fill" id="progress" style="width:0%"></div></div>
+    <div class="q-meta">
+      <span class="section-badge" id="q-section"></span>
+      <span class="q-counter" id="q-counter"></span>
+    </div>
+    <div class="question-text" id="q-text"></div>
+    <div class="options" id="options"></div>
+    <div class="feedback" id="feedback"></div>
+    <div class="nav">
+      <button class="btn" id="next-btn" onclick="nextQ()" disabled>Next</button>
+    </div>
+  </div>
+
+  <!-- Results screen -->
+  <div id="results-screen" style="display:none;"></div>
+
+</div>
+
+<script>
+const questions = [
+  { section: "Sales fundamentals", q: "A prospect says they&#39;re happy with their current provider. What is the best immediate response?", options: ["Move on -- they&#39;re not interested", "Acknowledge their satisfaction, then ask what would make them consider alternatives", "Offer a discount immediately", "Tell them your product is better"], correct: 1, exp: "Acknowledging before pivoting shows respect and opens dialogue. Jumping to discounts or claims of superiority signals desperation." },
+  { section: "Sales fundamentals", q: "What is the primary goal of an SDR/BDR in the sales process?", options: ["Close deals and collect payment", "Generate and qualify leads for account executives", "Manage existing customer accounts", "Conduct product demos for all prospects"], correct: 1, exp: "SDRs/BDRs focus on top-of-funnel: identifying, reaching, and qualifying prospects before passing them to AEs who handle closing." },
+  { section: "Sales fundamentals", q: "Which of these best defines a &#39;qualified lead&#39;?", options: ["Anyone who opens a cold email", "A contact who has budget, authority, need, and timeline (BANT)", "A person who attended a webinar", "Any inbound inquiry"], correct: 1, exp: "BANT (Budget, Authority, Need, Timeline) is the classic qualification framework. Not everyone who engages is truly qualified." },
+  { section: "Sales fundamentals", q: "In an outsourced sales context, why is it especially important to deeply understand the client&#39;s ICP?", options: ["To impress the client in meetings", "Because you&#39;re representing their brand and misdirected outreach wastes budget and damages their reputation", "To fill in CRM fields accurately", "To decide which product features to demo"], correct: 1, exp: "As outsourced reps, you&#39;re acting as an extension of the client. Misrepresenting their brand or targeting the wrong prospects has direct consequences for the client relationship." },
+  { section: "Prospecting & cold outreach", q: "You have 200 accounts to work. What is the most effective approach?", options: ["Call every account once in alphabetical order", "Prioritise accounts by fit score and engagement signals, then use multi-touch cadences", "Email all 200 on the same day", "Focus only on the largest companies by revenue"], correct: 1, exp: "Prioritisation and cadencing maximize ROI. A systematic multi-touch approach (calls, emails, LinkedIn) significantly outperforms spray-and-pray methods." },
+  { section: "Prospecting & cold outreach", q: "What is the recommended length for a cold outreach email?", options: ["500-700 words to show thoroughness", "1-3 short paragraphs with a single clear CTA", "Just a subject line and a calendar link", "A detailed product brochure attachment"], correct: 1, exp: "Brevity wins in cold outreach. Prospects make split-second decisions -- one clear call-to-action beats information overload every time." },
+  { section: "Prospecting & cold outreach", q: "Which of these LinkedIn messages is most likely to get a response?", options: ["Hi [Name], I&#39;d love to connect!", "Hi [Name], I noticed your company recently expanded into EMEA -- curious how you&#39;re approaching pipeline in new markets?", "Hi [Name], I sell SDR services and want to book a call.", "Hi [Name], check out our website and let me know if interested."], correct: 1, exp: "Personalisation and a relevant observation create curiosity. Generic connection requests and direct pitches have very low response rates on LinkedIn." },
+  { section: "Prospecting & cold outreach", q: "A prospect hasn&#39;t replied after 3 touchpoints. What should you do?", options: ["Remove them from your list immediately", "Continue the cadence with varied messaging across channels until a clear break-up point", "Call them every day until they respond", "Escalate to your manager"], correct: 1, exp: "Most responses come after 5-8 touchpoints. Persistence with varied, value-add messaging is key -- but there&#39;s a limit. A polite &#39;break-up&#39; email often generates responses." },
+  { section: "Objection handling", q: "A prospect says &#39;I don&#39;t have budget right now.&#39; What is the most effective response?", options: ["End the call politely", "Ask when budget cycles refresh and explore if there&#39;s a workaround or a smaller starting point", "Immediately offer a discount", "Send a proposal anyway"], correct: 1, exp: "&#39;No budget now&#39; often means &#39;not a priority yet.&#39; Understanding the budget cycle and exploring alternatives keeps the conversation alive for future pipeline." },
+  { section: "Objection handling", q: "A prospect says &#39;Just send me some information.&#39; How should you interpret this?", options: ["They are very interested -- send everything you have", "It is likely a polite brush-off -- try to uncover their real concern", "Send the full product brochure and wait", "Add them to the newsletter list"], correct: 1, exp: "&#39;Send me info&#39; is usually a polite objection. A skilled SDR will probe: &#39;What would be most relevant to send you?&#39; to qualify interest before investing time." },
+  { section: "Objection handling", q: "A prospect says &#39;We tried outsourced sales before and it didn&#39;t work.&#39; How do you handle this?", options: ["Apologise on behalf of the industry", "Acknowledge the experience, ask what didn&#39;t work, and explain specifically how your process differs", "Tell them the previous provider was bad", "Move on to a different prospect"], correct: 1, exp: "This objection is an opportunity. Asking what didn&#39;t work lets you address the specific gap and differentiate your approach credibly." },
+  { section: "CRM & tech stack", q: "Why is it important to log all prospect interactions in a CRM?", options: ["To show you&#39;re busy", "So the team has full visibility, handoffs are seamless, and data drives better future outreach", "Because managers require it", "To track how many calls you made"], correct: 1, exp: "CRM hygiene is foundational in outsourced sales -- AEs, managers and clients rely on accurate data for forecasting, handoffs, and reporting." },
+  { section: "CRM & tech stack", q: "A contact&#39;s status in the CRM is &#39;Contacted - No Response&#39;. What is the correct next step?", options: ["Mark as &#39;Lost&#39; and move on", "Follow the active cadence steps -- log the next touch with a note and schedule a follow-up", "Delete the contact", "Wait for them to call you"], correct: 1, exp: "No response != disqualified. CRM stages should reflect the actual status accurately so the cadence can continue correctly." },
+  { section: "CRM & tech stack", q: "Which of these is a leading indicator of pipeline health for an SDR?", options: ["Number of deals closed last quarter", "Number of qualified meetings booked per week", "The AE&#39;s win rate", "Total contacts in the database"], correct: 1, exp: "SDR leading indicators are activity-based: meetings booked, calls made, emails sent. Closed won is a lagging indicator owned by the AE." },
+  { section: "Resilience & mindset", q: "You&#39;ve had 30 rejections in a row. What is the healthiest mindset to maintain performance?", options: ["Take the rest of the day off", "Treat each call as independent -- rejection is part of the process, not a reflection of your worth", "Lower your daily targets", "Ask to be moved to a different account"], correct: 1, exp: "High-performing SDRs separate their self-worth from outcomes. Viewing rejection as a numbers game (not personal) is critical for sustained performance." },
+  { section: "Resilience & mindset", q: "Your manager gives you critical feedback on your cold call delivery. What is the best response?", options: ["Defend your current approach", "Thank them, ask for specific examples, and actively apply the feedback", "Agree in the meeting but ignore it afterwards", "Feel discouraged and reduce call volume"], correct: 1, exp: "Coachability is one of the top traits hiring managers assess in SDRs. Seeking specific examples shows maturity and a growth mindset." },
+  { section: "Resilience & mindset", q: "You are behind target with one week left in the month. What do you do?", options: ["Accept you&#39;ll miss and move on to next month", "Triage your pipeline, increase activity on the highest-probability opportunities, and communicate transparently with your manager", "Make promises to prospects to rush deals forward", "Work on admin tasks to stay busy"], correct: 1, exp: "Urgency + prioritisation + transparency is the right recipe. Making false promises destroys trust and damages the client relationship long-term." },
+  { section: "Resilience & mindset", q: "A client you&#39;re representing has a product you personally find hard to sell. What do you do?", options: ["Ask to be reassigned immediately", "Find genuine strengths of the product, understand the target buyer&#39;s pain points, and build your pitch around real value", "Tell prospects you&#39;re just doing your job", "Deliver low effort knowing results will be poor"], correct: 1, exp: "As an outsourced rep, adapting to different clients and products is core to the role. Finding genuine value hooks and understanding the buyer is how top SDRs succeed across accounts." }
+];
+
+let current = 0, answers = [], answered = false, candidateName = '', candidateEmail = '', candidateRole = '';
+
+function validateAndStart() {
+  const fn = document.getElementById('fname').value.trim();
+  const ln = document.getElementById('lname').value.trim();
+  const em = document.getElementById('email').value.trim();
+  document.getElementById('err-fname').style.display = fn ? 'none' : 'block';
+  document.getElementById('err-lname').style.display = ln ? 'none' : 'block';
+  const emailOk = em && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em);
+  document.getElementById('err-email').style.display = emailOk ? 'none' : 'block';
+  if (!fn || !ln || !emailOk) return;
+  candidateName = fn + ' ' + ln;
+  candidateEmail = em;
+  candidateRole = document.getElementById('role').value.trim();
+  document.getElementById('intro-screen').style.display = 'none';
+  document.getElementById('test-screen').style.display = 'block';
+  renderQ();
+}
+
+function renderQ() {
+  const q = questions[current];
+  document.getElementById('progress').style.width = Math.round((current / questions.length) * 100) + '%';
+  document.getElementById('q-section').textContent = q.section;
+  document.getElementById('q-text').textContent = q.q;
+  document.getElementById('q-counter').textContent = (current + 1) + ' of ' + questions.length;
+  document.getElementById('next-btn').disabled = true;
+  document.getElementById('next-btn').textContent = current < questions.length - 1 ? 'Next' : 'See results';
+  const fb = document.getElementById('feedback');
+  fb.className = 'feedback'; fb.textContent = '';
+  answered = false;
+  const letters = ['A','B','C','D'];
+  const ol = document.getElementById('options');
+  ol.innerHTML = '';
+  q.options.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'opt';
+    btn.innerHTML = '<span class="opt-letter">' + letters[i] + '</span>' + opt;
+    btn.onclick = () => selectAnswer(i);
+    ol.appendChild(btn);
+  });
+}
+
+function selectAnswer(idx) {
+  if (answered) return;
+  answered = true;
+  const q = questions[current];
+  answers.push({ qIdx: current, selected: idx, correct: q.correct });
+  const btns = document.getElementById('options').querySelectorAll('.opt');
+  const fb = document.getElementById('feedback');
+  btns.forEach((btn, i) => {
+    btn.style.pointerEvents = 'none';
+    if (i === q.correct) btn.classList.add('correct');
+    else if (i === idx && idx !== q.correct) btn.classList.add('incorrect');
+  });
+  if (idx === q.correct) {
+    fb.className = 'feedback ok show';
+    fb.innerHTML = '<strong>Correct.</strong> ' + q.exp;
+  } else {
+    fb.className = 'feedback bad show';
+    fb.innerHTML = '<strong>Incorrect.</strong> ' + q.exp;
+  }
+  document.getElementById('next-btn').disabled = false;
+}
+
+function nextQ() {
+  if (current < questions.length - 1) { current++; renderQ(); }
+  else showResults();
+}
+
+function showResults() {
+  document.getElementById('test-screen').style.display = 'none';
+  const rs = document.getElementById('results-screen');
+  rs.style.display = 'block';
+
+  const totalCorrect = answers.filter(a => a.selected === a.correct).length;
+  const pct = Math.round((totalCorrect / questions.length) * 100);
+  const passed = pct >= 70;
+
+  const sections = {};
+  questions.forEach((q, i) => {
+    if (!sections[q.section]) sections[q.section] = { total: 0, correct: 0 };
+    sections[q.section].total++;
+    const ans = answers.find(a => a.qIdx === i);
+    if (ans && ans.selected === q.correct) sections[q.section].correct++;
+  });
+
+  let verdict, vClass, summary;
+  if (pct >= 85) { verdict = 'Strong candidate -- recommended'; vClass = 'v-strong'; summary = candidateName + ' demonstrates strong understanding across all five competency areas. Recommended to progress to the next stage.'; }
+  else if (pct >= 70) { verdict = 'Pass -- proceed with interview'; vClass = 'v-good'; summary = candidateName + ' has passed the 70% threshold. Review section scores below to identify areas to probe further in interview.'; }
+  else { verdict = 'Below pass mark (70%)'; vClass = 'v-weak'; summary = candidateName + ' scored below the 70% pass mark. Review specific section scores before deciding whether to proceed.'; }
+
+  const sHTML = Object.entries(sections).map(([name, s]) => {
+    const p = Math.round((s.correct / s.total) * 100);
+    const c = p >= 70 ? '#1D9E75' : p >= 50 ? '#6B5CE7' : '#E24B4A';
+    return `<div class="s-row"><div class="s-name">${name}</div><div class="s-bar-bg"><div class="s-bar" style="width:${p}%;background:${c};"></div></div><div class="s-pct">${p}%</div></div>`;
+  }).join('');
+
+  const circ = (2 * Math.PI * 40).toFixed(1);
+  const offset = (circ - (pct / 100) * circ).toFixed(1);
+  const ring = pct >= 85 ? '#1D9E75' : pct >= 70 ? '#6B5CE7' : '#E24B4A';
+  const passBg = passed ? '#E1F5EE' : '#FCEBEB';
+  const passCol = passed ? '#085041' : '#501313';
+
+  rs.innerHTML = `
+    <div class="results-header">
+      <img src="data:image/jpeg;base64,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" alt="Infoanalytica" style="height:34px;width:auto;" />
+      <span class="pass-badge" style="background:${passBg};color:${passCol};">${passed ? 'PASS' : 'FAIL'}</span>
+    </div>
+
+    <div class="score-wrap">
+      <svg width="90" height="90" viewBox="0 0 100 100" style="flex-shrink:0;">
+        <circle cx="50" cy="50" r="40" fill="none" stroke="rgba(0,0,0,0.08)" stroke-width="8"/>
+        <circle cx="50" cy="50" r="40" fill="none" stroke="${ring}" stroke-width="8"
+          stroke-dasharray="${circ}" stroke-dashoffset="${offset}"
+          stroke-linecap="round" transform="rotate(-90 50 50)"/>
+        <text x="50" y="55" text-anchor="middle" font-size="20" font-weight="600" fill="#1a1a1a">${pct}%</text>
+      </svg>
+      <div>
+        <span class="verdict-badge ${vClass}">${verdict}</span>
+        <p style="font-size:13px;color:#555;margin:0;line-height:1.6;max-width:380px;">${summary}</p>
+      </div>
+    </div>
+
+    <div class="metrics">
+      <div class="metric"><div class="metric-val">${totalCorrect}/${questions.length}</div><div class="metric-lbl">Correct answers</div></div>
+      <div class="metric"><div class="metric-val">${pct}%</div><div class="metric-lbl">Overall score</div></div>
+      <div class="metric"><div class="metric-val">70%</div><div class="metric-lbl">Pass mark</div></div>
+      <div class="metric"><div class="metric-val">${questions.length - totalCorrect}</div><div class="metric-lbl">To review</div></div>
+    </div>
+
+    <div class="section-scores">
+      <h3>Section breakdown</h3>
+      ${sHTML}
+    </div>
+
+    <div class="results-footer">
+      <span>Candidate: <strong>${candidateName}</strong></span>
+      <span>Completed: ${new Date().toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}</span>
+    </div>
+
+    <div class="results-actions">
+      <button class="btn purple" onclick="location.reload()">New candidate</button>
+    </div>
+  `;
+
+  // Send results to Formspree
+  const sectionScores = Object.entries(sections).map(([name, s]) =>
+    `${name}: ${Math.round((s.correct / s.total) * 100)}%`
+  ).join(' | ');
+
+  fetch('https://formspree.io/f/mzdkqldw', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+    body: JSON.stringify({
+      name: candidateName,
+      email: candidateEmail,
+      role: candidateRole || 'Not specified',
+      score: pct + '%',
+      result: passed ? 'PASS' : 'FAIL',
+      correct: totalCorrect + ' / ' + questions.length,
+      sections: sectionScores,
+      completed: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+    })
+  });
+}
+</script>
+</body>
+</html>
